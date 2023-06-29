@@ -4,7 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cheng.common.vo.Result;
 import com.cheng.sys.entity.User;
+import com.cheng.sys.entity.request.LoginRequest;
+import com.cheng.sys.entity.request.RegisterRequest;
 import com.cheng.sys.service.IUserService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +28,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/user")
+@Api(tags = "用户接口列表")
 //@CrossOrigin 解决跨域问题
 public class UserController {
 
@@ -39,15 +44,24 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public Result<Map<String, Object>> login(@RequestBody User user) {
-        Map<String, Object> data = userService.login(user);
+    @ApiOperation("用户登录")
+    public Result<Map<String, Object>> login(@RequestBody LoginRequest loginRequest) {
+        Map<String, Object> data = userService.login(loginRequest);
         if (data != null) {
             return Result.success(data);
         }
         return Result.fail(20002, "用户名或密码错误");
     }
 
+    @PostMapping("/register")
+    @ApiOperation("用户注册")
+    public Result<String> register(@RequestBody RegisterRequest registerRequest) {
+
+        return userService.register(registerRequest);
+    }
+
     @GetMapping("/info")
+    @ApiOperation("获取用户信息")
     public Result<Map<String, Object>> getUserInfo(@RequestParam("token") String token) {
 
         // 根据token获取用户信息 redis
@@ -61,6 +75,7 @@ public class UserController {
     }
 
     @PostMapping("/logout")
+    @ApiOperation("退出登录")
     public Result<?> logout(@RequestHeader("X-Token") String token) {
         userService.logout(token);
         return Result.success();
