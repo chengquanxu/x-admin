@@ -55,11 +55,12 @@ public class UserController {
 
     @PostMapping("/register")
     @ApiOperation("用户注册")
-    public Result<String> register(@RequestBody RegisterRequest registerRequest) {
+    public Result<Integer> register(@RequestBody RegisterRequest registerRequest) {
 
         return userService.register(registerRequest);
     }
 
+    //
     @GetMapping("/info")
     @ApiOperation("获取用户信息")
     public Result<Map<String, Object>> getUserInfo(@RequestParam("token") String token) {

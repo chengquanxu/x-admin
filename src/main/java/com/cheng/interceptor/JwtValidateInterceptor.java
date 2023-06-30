@@ -5,7 +5,6 @@ import com.cheng.common.utils.JwtUtil;
 import com.cheng.common.vo.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.lang.NonNullApi;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -51,11 +50,11 @@ public class JwtValidateInterceptor implements HandlerInterceptor {
         log.debug(request.getRequestURI() + "验证失败，禁止访问");
         response.setContentType("application/json;charset=utf-8");
         response.getWriter().write(JSON.toJSONString(Result.fail(20003,"jwt令牌无效，请重新登录")));
-         return false; // 拦截
+        return false; // 拦截
     }
 
     // 判断请求的 URL 是否是需要放行的静态资源文件
     private boolean isStaticResource(String requestUri) {
-        return requestUri.startsWith("/webjars/css/") || requestUri.startsWith("/webjars/js/") || requestUri.startsWith("/favicon.ico");
+        return requestUri.startsWith("/webjars/css/") || requestUri.startsWith("/webjars/js/") || requestUri.startsWith("/favicon.ico") || requestUri.startsWith("/swagger-resources");
     }
 }

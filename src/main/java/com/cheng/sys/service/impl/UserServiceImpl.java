@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.cheng.sys.common.StatusCode.PARAMS_ERROR;
+
 /**
  * <p>
  * 服务实现类
@@ -98,30 +100,37 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }*/
 
     @Override
-    public Result<String> register(RegisterRequest registerRequest) {
+    public Result<Integer> register(RegisterRequest registerRequest) {
 
         String username = registerRequest.getUsername();
         String password = registerRequest.getPassword();
         String checkPassword = registerRequest.getCheckPassword();
 
         if (!(StrUtil.isAllNotBlank(username,password,checkPassword))) {
-            return Result.fail(40001,"输入不能为空");
+//            return Result.fail(40001,"输入不能为空");
+            return Result.fail(PARAMS_ERROR,"输入不能为空");
         }
 
         if (RegexValidator.isValidUsername(username)) {
-            return Result.fail(40001,"用户名不合法");
+            return Result.fail(PARAMS_ERROR,"用户名不合法");
         }
 
         if (RegexValidator.isValidPassword(password)) {
-            return Result.fail(40001,"密码不合法，至少6位");
+            return Result.fail(PARAMS_ERROR,"密码不合法，至少6位");
         }
 
         if (RegexValidator.isValidPassword(checkPassword)) {
-            return Result.fail(40001,"重复密码不合法，至少6位");
+            return Result.fail(PARAMS_ERROR,"重复密码不合法，至少6位");
         }
 
         if (!(password.equals(checkPassword))) {
-            return Result.fail(40002,"两次密码不一致");
+            return Result.fail(PARAMS_ERROR,"两次密码不一致");
+        }
+
+        // 判断用户是否已经存在
+        User selectUser = baseMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getUsername, username));
+        if (BeanUtil.isNotEmpty(selectUser)) {
+            return Result.fail(PARAMS_ERROR,"用户名已存在");
         }
 
         // 对密码加密
@@ -136,7 +145,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setEmail(EmailGenerator.generateRandomEmail(username));
         save(user);
 
-        return Result.success("注册成功");
+        return Result.success("注册成功",user.getId());
     }
 
     @Override
@@ -154,6 +163,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if(loginUser != null){
             Map<String, Object> data =  new HashMap<>();
             data.put("name",loginUser.getUsername());
+            data.put("phone",loginUser.getPhone());
+            data.put("email",loginUser.getEmail());
             data.put("avatar",loginUser.getAvatar());
             List<String> roleList = this.getBaseMapper().getRoleNamesByUserId(loginUser.getId());
 
